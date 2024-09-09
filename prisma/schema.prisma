@@ -13,9 +13,58 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  USER
+  DRIVER
+}
 
 model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  password     String
+  role         Role     @default(USER)
+  isSuperAdmin Boolean  @default(false)
+  Driver       Driver[]
+}
+
+enum CarStatus {
+  Ok
+  Broken
+  Sold
+}
+
+model Car {
+  id          Int       @id @default(autoincrement())
+  make        String
+  model       String
+  status      CarStatus
+  year        Int
+  pricePerDay Float
+  available   Boolean   @default(true)
+}
+
+enum RoomType {
+  Single
+  Double
+  Suite
+}
+
+model Room {
+  id            Int      @id @default(autoincrement())
+  number        String
+  type          RoomType
+  pricePerNight Float
+  available     Boolean  @default(true)
+}
+
+model Driver {
+  id        Int    @id @default(autoincrement())
+  firstName String
+  LastName  String
+  license   String
+
+  user User @relation(fields: [userId], references: [id])
+  userId Int
 }
