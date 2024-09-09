@@ -61,10 +61,12 @@ model Room {
 }
 
 model Driver {
-  id        Int    @id @default(autoincrement())
-  firstName String
-  LastName  String
-  license   String
+  id          Int    @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  license     String
+  age         Int
+  phoneNumber String
 
   user   User @relation(fields: [userId], references: [id])
   userId Int
