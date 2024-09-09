@@ -37,11 +37,12 @@ enum CarStatus {
 
 model Car {
   id          Int       @id @default(autoincrement())
+  title       String
   make        String
   model       String
-  status      CarStatus
+  status      CarStatus @default(Ok)
   year        Int
-  pricePerDay Float
+  priceForDay Float
   available   Boolean   @default(true)
 }
 
@@ -65,6 +66,6 @@ model Driver {
   LastName  String
   license   String
 
-  user User @relation(fields: [userId], references: [id])
+  user   User @relation(fields: [userId], references: [id])
   userId Int
 }
