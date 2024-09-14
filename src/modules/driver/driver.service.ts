@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDriverDto } from './dto/create-driver.dto';
 //import { UpdateDriverDto } from './dto/update-driver.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,18 +9,10 @@ import { Prisma } from '@prisma/client';
 export class DriverService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createDriverDto: CreateDriverDto) {
-    const {
-      createdUser,
-      email,
-      age,
-      firstName,
-      lastName,
-      license,
-      phoneNumber,
-      userId,
-    } = createDriverDto;
+    const { age, firstName, lastName, license, phoneNumber } = createDriverDto;
 
-    const passwordDefault = bcrypt.hashSync(email, 10);
+    const passwordDefault = bcrypt.hashSync(license, 10);
+    const emailDefault = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@agency.com`;
 
     const newDriver: Prisma.DriverCreateInput = {
       firstName,
@@ -28,20 +20,18 @@ export class DriverService {
       age,
       phoneNumber,
       license,
-      user: userId ? { connect: { id: userId } } : undefined,
+      user: undefined,
     };
 
-    if (createdUser && !userId) {
-      const user = await this.prisma.user.create({
-        data: {
-          email,
-          name: firstName + '' + lastName,
-          password: passwordDefault,
-        },
-      });
+    const user = await this.prisma.user.create({
+      data: {
+        email: emailDefault,
+        name: firstName + '' + lastName,
+        password: passwordDefault,
+      },
+    });
 
-      newDriver.user = { connect: { id: user.id } };
-    }
+    newDriver.user = { connect: { id: user.id } };
 
     return this.prisma.driver.create({ data: newDriver });
   }
@@ -50,8 +40,13 @@ export class DriverService {
     return this.prisma.driver.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.driver.findUnique({ where: { id } });
+  async findOne(id: number) {
+    const driver = await this.prisma.driver.findUnique({ where: { id } });
+
+    if (!driver) {
+      throw new NotFoundException('Driver not found');
+    }
+    return driver;
   }
 
   // update(id: number, updateDriverDto: UpdateDriverDto) {

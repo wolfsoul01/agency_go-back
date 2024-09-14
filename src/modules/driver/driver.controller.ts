@@ -27,6 +27,10 @@ export class DriverController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
+    if (!id) {
+      throw new Error('ID is required');
+    }
+    console.log(id);
     return this.driverService.findOne(+id);
   }
 
