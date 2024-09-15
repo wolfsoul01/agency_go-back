@@ -35,12 +35,22 @@ enum CarStatus {
   Sold
 }
 
+enum CarType {
+  A
+  B
+  C1
+  C
+  D1
+  D
+}
+
 model Car {
   id          Int       @id @default(autoincrement())
   title       String
   make        String
   model       String
   status      CarStatus @default(Ok)
+  type        CarType   
   year        Int
   priceForDay Float
   available   Boolean   @default(true)
@@ -60,13 +70,23 @@ model Room {
   available     Boolean  @default(true)
 }
 
+enum TypeLicencse {
+  A
+  B
+  C1
+  C
+  D1
+  D
+}
+
 model Driver {
-  id          Int    @id @default(autoincrement())
-  firstName   String
-  lastName    String
-  license     String
-  age         Int
-  phoneNumber String
+  id           Int          @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  license      String
+  age          Int
+  phoneNumber  String
+  typeLicense TypeLicencse 
 
   user   User @relation(fields: [userId], references: [id])
   userId Int

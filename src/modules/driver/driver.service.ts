@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDriverDto } from './dto/create-driver.dto';
-//import { UpdateDriverDto } from './dto/update-driver.dto';
+import { UpdateDriverDto } from './dto/update-driver.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
@@ -9,7 +9,8 @@ import { Prisma } from '@prisma/client';
 export class DriverService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createDriverDto: CreateDriverDto) {
-    const { age, firstName, lastName, license, phoneNumber } = createDriverDto;
+    const { age, firstName, lastName, license, phoneNumber, typeLicense } =
+      createDriverDto;
 
     const passwordDefault = bcrypt.hashSync(license, 10);
     const emailDefault = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@agency.com`;
@@ -20,6 +21,7 @@ export class DriverService {
       age,
       phoneNumber,
       license,
+      typeLicense,
       user: undefined,
     };
 
@@ -49,11 +51,38 @@ export class DriverService {
     return driver;
   }
 
-  // update(id: number, updateDriverDto: UpdateDriverDto) {
-  //   return `This action updates a #${id} driver`;
-  // }
+  update(id: number, updateDriverDto: UpdateDriverDto) {
+    return this.prisma.driver.update({
+      data: {
+        ...updateDriverDto,
+      },
+      where: { id },
+    });
+  }
 
-  remove(id: number) {
-    return `This action removes a #${id} driver`;
+  async remove(id: number) {
+    const driver = await this.findOne(id);
+    const user = await this.prisma.user.findUnique({
+      where: { id: driver.userId },
+    });
+
+    if (!driver) {
+      throw new NotFoundException('Driver not found');
+    }
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    try {
+      await this.prisma.$transaction([
+        this.prisma.driver.delete({ where: { id } }),
+        this.prisma.user.delete({ where: { id: driver.userId } }),
+      ]);
+
+      return 'Deleted driver';
+    } catch (error) {
+      throw new Error('Error while removing driver');
+    }
   }
 }

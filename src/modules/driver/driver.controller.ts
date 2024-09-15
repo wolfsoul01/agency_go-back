@@ -3,13 +3,16 @@ import {
   Get,
   Post,
   Body,
-  // Patch,
+  Patch,
   Param,
   Delete,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { DriverService } from './driver.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
-// import { UpdateDriverDto } from './dto/update-driver.dto';
+import { UpdateDriverDto } from './dto/update-driver.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('driver')
 export class DriverController {
@@ -34,13 +37,23 @@ export class DriverController {
     return this.driverService.findOne(+id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateDriverDto: UpdateDriverDto) {
-  //   return this.driverService.update(+id, updateDriverDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateDriverDto: UpdateDriverDto) {
+    return this.driverService.update(+id, updateDriverDto);
+  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.driverService.remove(+id);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    console.log(file);
+    //const filePath = `/${file.filename}`;
+    return {
+      filename: file,
+    };
   }
 }

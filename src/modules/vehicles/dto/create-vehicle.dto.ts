@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateVehicleDto {
   @IsString()
@@ -12,6 +12,9 @@ export class CreateVehicleDto {
 
   @IsNumber()
   year: number;
+
+  @IsEnum(['A', 'B', 'C1', 'D1', 'D'])
+  type: 'A' | 'B' | 'C' | 'C1' | 'D1' | 'D';
 
   @IsNumber()
   priceForDay: number;

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateDriverDto {
   @IsString()
@@ -16,6 +16,9 @@ export class CreateDriverDto {
   @IsNumber()
   @IsNotEmpty()
   age: number;
+
+  @IsEnum(['A', 'B', 'C1', 'D1', 'D'])
+  typeLicense: 'A' | 'B' | 'C' | 'C1' | 'D1' | 'D';
 
   @IsString()
   @IsNotEmpty()
