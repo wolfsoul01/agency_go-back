@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
@@ -13,6 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 enum Role {
   ADMIN
   USER
@@ -20,19 +21,21 @@ enum Role {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   name         String
-  email        String   @unique
+  email        String        @unique
   password     String
-  role         Role     @default(USER)
-  isSuperAdmin Boolean  @default(false)
+  role         Role          @default(USER)
+  isSuperAdmin Boolean       @default(false)
   Driver       Driver[]
+  Reservation  Reservation[]
+  Trip         Trip[]
 }
 
 enum CarStatus {
-  Ok
-  Broken
-  Sold
+  OK
+  BROKEN
+  SOLD
 }
 
 enum CarType {
@@ -45,32 +48,36 @@ enum CarType {
 }
 
 model Car {
-  id          Int       @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   title       String
   make        String
   model       String
-  status      CarStatus @default(Ok)
-  type        CarType   
+  status      CarStatus     @default(OK)
+  type        CarType
   year        Int
   priceForDay Float
-  available   Boolean   @default(true)
+  available   Boolean       @default(true)
+  Reservation Reservation[]
+  Trip        Trip[]
 }
 
 enum RoomType {
-  Single
-  Double
-  Suite
+  SINGLE
+  DOUBLE
+  SUITE
 }
 
 model Room {
-  id            Int      @id @default(autoincrement())
+  id            Int             @id @default(autoincrement())
   number        String
   type          RoomType
   pricePerNight Float
-  available     Boolean  @default(true)
+  available     Boolean         @default(true)
+  Accommodation Accommodation[]
+  Reservation   Reservation[]
 }
 
-enum TypeLicencse {
+enum LicenseType {
   A
   B
   C1
@@ -80,14 +87,102 @@ enum TypeLicencse {
 }
 
 model Driver {
-  id           Int          @id @default(autoincrement())
-  firstName    String
-  lastName     String
-  license      String
-  age          Int
-  phoneNumber  String
-  typeLicense TypeLicencse 
+  id          Int         @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  license     String
+  age         Int
+  phoneNumber String
+  typeLicense LicenseType
 
   user   User @relation(fields: [userId], references: [id])
   userId Int
+
+  Reservation Reservation[]
+  Trip        Trip[]
+}
+
+model Accommodation {
+  id      Int    @id @default(autoincrement())
+  name    String
+  address String
+  rooms   Room[]
+}
+
+enum ReservationStatus {
+  Pending
+  Confirmed
+  Cancelled
+}
+
+model Reservation {
+  id        Int               @id @default(autoincrement())
+  startDate DateTime
+  endDate   DateTime
+  status    ReservationStatus // Pending, Confirmed, Cancelled, etc.
+  user      User              @relation(fields: [userId], references: [id])
+  userId    Int
+  room      Room              @relation(fields: [roomId], references: [id])
+  roomId    Int
+  car       Car?              @relation(fields: [carId], references: [id])
+  carId     Int?
+  driver    Driver?           @relation(fields: [driverId], references: [id])
+  driverId  Int?
+}
+
+model Trip {
+  id          Int        @id @default(autoincrement())
+  destination String
+  startDate   DateTime
+  endDate     DateTime
+  status      String // Scheduled, Completed, Cancelled, etc.
+  user        User       @relation(fields: [userId], references: [id])
+  userId      Int
+  driver      Driver     @relation(fields: [driverId], references: [id])
+  driverId    Int
+  car         Car        @relation(fields: [carId], references: [id])
+  carId       Int
+  address     Addresses? @relation(fields: [addressId], references: [id])
+  addressId   Int?
+}
+
+model Addresses {
+  id                  Int             @id @default(autoincrement())
+  street_1            String?
+  street_2            String?
+  description         String?
+  city                String?
+  coordinateLatitude  String?
+  coordinateLongitude String?
+  postalCode          String?
+  municipalityId      Int?
+  provinceId          Int?
+  countryId           Int?
+  createdAt           DateTime
+  updatedAt           DateTime
+  Municipalities      Municipalities? @relation(fields: [municipalityId], references: [id], onDelete: NoAction)
+  Provinces           Provinces?      @relation(fields: [provinceId], references: [id], onDelete: NoAction)
+  trips               Trip[]
+}
+
+model Municipalities {
+  id         Int         @id @default(autoincrement())
+  name       String?
+  code       String
+  provinceId Int?
+  createdAt  DateTime
+  updatedAt  DateTime
+  Addresses  Addresses[]
+  Provinces  Provinces?  @relation(fields: [provinceId], references: [id], onDelete: NoAction)
+}
+
+model Provinces {
+  id             Int              @id @default(autoincrement())
+  name           String?
+  code           String
+  countryId      Int?
+  createdAt      DateTime
+  updatedAt      DateTime
+  Addresses      Addresses[]
+  Municipalities Municipalities[]
 }
