@@ -13,6 +13,7 @@ import { DriverService } from './driver.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('driver')
 export class DriverController {
@@ -48,12 +49,36 @@ export class DriverController {
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      fileFilter(req, file, callback) {
+        const allowedMimeTypes = ['image/jpeg', 'image/png'];
+
+        if (!file) {
+          return callback(new Error('No file uploaded'), false);
+        }
+
+        const isValid = allowedMimeTypes.includes(file.mimetype);
+
+        if (!isValid) {
+          return callback(new Error('Invalid mime type'), false);
+        }
+
+        callback(null, isValid);
+      },
+      storage: diskStorage({
+        destination: './static/',
+        filename(req, file, callback) {
+          const name = file.fieldname + '-' + Date.now();
+          const fileExtension = file.mimetype.split('/').pop();
+          callback(null, name + '.' + fileExtension);
+        },
+      }),
+    }),
+  )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
-    //const filePath = `/${file.filename}`;
-    return {
-      filename: file,
-    };
+    const { path } = file;
+
+    return this.driverService.uploadFile(path);
   }
 }

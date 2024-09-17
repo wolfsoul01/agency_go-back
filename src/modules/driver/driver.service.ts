@@ -85,4 +85,15 @@ export class DriverService {
       throw new Error('Error while removing driver');
     }
   }
+
+  async uploadFile(path: string) {
+    const image = await this.prisma.image.create({
+      data: {
+        url: path,
+        description: 'Driver Photo',
+      },
+    });
+
+    return image;
+  }
 }

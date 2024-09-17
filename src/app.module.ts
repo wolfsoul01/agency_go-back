@@ -5,6 +5,8 @@ import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { DriverModule } from './modules/driver/driver.module';
 import { RoomModule } from './modules/room/room.module';
 import { UserModule } from './modules/user/user.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -14,6 +16,10 @@ import { UserModule } from './modules/user/user.module';
     DriverModule,
     RoomModule,
     UserModule,
+
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'static'),
+    }),
   ],
 })
 export class AppModule {}

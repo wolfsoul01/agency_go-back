@@ -28,6 +28,8 @@ model User {
   Driver       Driver[]
   Reservation  Reservation[]
   Trip         Trip[]
+  image        Image?        @relation(fields: [imageId], references: [id])
+  imageId      Int?
 }
 
 enum CarStatus {
@@ -195,4 +197,11 @@ model Provinces {
   updatedAt      DateTime
   Addresses      Addresses[]
   Municipalities Municipalities[]
+}
+
+model Image {
+  id          Int     @id @default(autoincrement())
+  url         String  @unique
+  description String?
+  User        User[]
 }
