@@ -1,4 +1,3 @@
-
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
@@ -12,7 +11,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 
 enum Role {
   ADMIN
@@ -68,12 +66,11 @@ enum RoomType {
 }
 
 model Room {
-  id            Int             @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   number        String
   type          RoomType
   pricePerNight Float
-  available     Boolean         @default(true)
-  Accommodation Accommodation[]
+  available     Boolean       @default(true)
   Reservation   Reservation[]
 }
 
@@ -102,13 +99,6 @@ model Driver {
   Trip        Trip[]
 }
 
-model Accommodation {
-  id      Int    @id @default(autoincrement())
-  name    String
-  address String
-  rooms   Room[]
-}
-
 enum ReservationStatus {
   Pending
   Confirmed
@@ -130,39 +120,59 @@ model Reservation {
   driverId  Int?
 }
 
+enum TripStatus {
+  PENDING
+  ACEPTED
+  REJECTED
+  COMPLETED
+}
+
 model Trip {
-  id          Int        @id @default(autoincrement())
-  destination String
-  startDate   DateTime
-  endDate     DateTime
-  status      String // Scheduled, Completed, Cancelled, etc.
-  user        User       @relation(fields: [userId], references: [id])
-  userId      Int
-  driver      Driver     @relation(fields: [driverId], references: [id])
-  driverId    Int
-  car         Car        @relation(fields: [carId], references: [id])
-  carId       Int
-  address     Addresses? @relation(fields: [addressId], references: [id])
-  addressId   Int?
+  id              Int        @id @default(autoincrement())
+  destination     String
+  startDate       DateTime
+  endDate         DateTime
+  status          TripStatus
+  user            User       @relation(fields: [userId], references: [id])
+  userId          Int
+  driver          Driver     @relation(fields: [driverId], references: [id])
+  driverId        Int
+  car             Car        @relation(fields: [carId], references: [id])
+  carId           Int
+  address_end     Addresses? @relation(name: "address_end", fields: [address_end_id], references: [id], onDelete: SetNull)
+  address_end_id  Int?
+  address_init    Addresses? @relation(name: "address_init", fields: [address_init_id], references: [id], onDelete: SetNull)
+  address_init_id Int?
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  Addresses   Addresses? @relation(fields: [addressesId], references: [id])
+  addressesId Int?
 }
 
 model Addresses {
-  id                  Int             @id @default(autoincrement())
+  id                  Int      @id @default(autoincrement())
   street_1            String?
   street_2            String?
   description         String?
   city                String?
-  coordinateLatitude  String?
-  coordinateLongitude String?
+  coordinateLatitude  Float?
+  coordinateLongitude Float?
   postalCode          String?
   municipalityId      Int?
   provinceId          Int?
   countryId           Int?
-  createdAt           DateTime
-  updatedAt           DateTime
-  Municipalities      Municipalities? @relation(fields: [municipalityId], references: [id], onDelete: NoAction)
-  Provinces           Provinces?      @relation(fields: [provinceId], references: [id], onDelete: NoAction)
-  trips               Trip[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  Municipalities Municipalities? @relation(fields: [municipalityId], references: [id], onDelete: SetNull)
+  Provinces      Provinces?      @relation(fields: [provinceId], references: [id], onDelete: SetNull)
+
+  trips Trip[]
+
+  TripInit Trip[] @relation(name: "address_init")
+
+  TripEnd Trip[] @relation(name: "address_end")
 }
 
 model Municipalities {
