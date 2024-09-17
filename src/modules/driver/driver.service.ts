@@ -39,11 +39,20 @@ export class DriverService {
   }
 
   findAll() {
-    return this.prisma.driver.findMany();
+    return this.prisma.driver.findMany({
+      include: {
+        image: true,
+      },
+    });
   }
 
   async findOne(id: number) {
-    const driver = await this.prisma.driver.findUnique({ where: { id } });
+    const driver = await this.prisma.driver.findUnique({
+      where: { id },
+      include: {
+        image: true,
+      },
+    });
 
     if (!driver) {
       throw new NotFoundException('Driver not found');
@@ -86,14 +95,32 @@ export class DriverService {
     }
   }
 
-  async uploadFile(path: string) {
-    const image = await this.prisma.image.create({
-      data: {
-        url: path,
-        description: 'Driver Photo',
-      },
+  async uploadFile(path: string, fileName: string, driverId: number) {
+    const driver = await this.prisma.driver.findUnique({
+      where: { id: driverId },
     });
 
-    return image;
+    const serverUrl = 'http://localhost:3001';
+    const url = `${serverUrl}/uploads/${fileName}`;
+
+    if (!driver) {
+      throw new NotFoundException('Driver not found');
+    }
+
+    return this.prisma.$transaction(async (prisma) => {
+      const image = await prisma.image.create({
+        data: {
+          url: url,
+          description: fileName,
+        },
+      });
+
+      await prisma.driver.update({
+        where: { id: driverId },
+        data: { imageId: image.id },
+      });
+
+      return image;
+    });
   }
 }

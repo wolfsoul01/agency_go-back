@@ -8,6 +8,7 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { DriverService } from './driver.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
@@ -52,7 +53,7 @@ export class DriverController {
   @UseInterceptors(
     FileInterceptor('file', {
       fileFilter(req, file, callback) {
-        const allowedMimeTypes = ['image/jpeg', 'image/png'];
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
         if (!file) {
           return callback(new Error('No file uploaded'), false);
@@ -67,7 +68,7 @@ export class DriverController {
         callback(null, isValid);
       },
       storage: diskStorage({
-        destination: './static/',
+        destination: './static/uploads',
         filename(req, file, callback) {
           const name = file.fieldname + '-' + Date.now();
           const fileExtension = file.mimetype.split('/').pop();
@@ -76,9 +77,16 @@ export class DriverController {
       }),
     }),
   )
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    const { path } = file;
+  uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('driverId') driverId: number,
+  ) {
+    const { path, filename } = file;
 
-    return this.driverService.uploadFile(path);
+    if (!driverId) {
+      throw new BadRequestException('Driver ID is required');
+    }
+
+    return this.driverService.uploadFile(path, filename, +driverId);
   }
 }
