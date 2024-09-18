@@ -10,4 +10,10 @@ export class AddressService {
   getMunicipalities() {
     return this.prisma.municipalities.findMany();
   }
+  getMunicipalitiesForProvince(provinceId: number) {
+    console.log('provinceId', provinceId);
+    return this.prisma.municipalities.findMany({
+      where: { provinceId },
+    });
+  }
 }
