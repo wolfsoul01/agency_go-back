@@ -8,6 +8,7 @@ import { UserModule } from './modules/user/user.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AnalyticModule } from './modules/analytic/analytic.module';
+import { AddressModule } from './modules/address/address.module';
 
 @Module({
   imports: [
@@ -23,6 +24,8 @@ import { AnalyticModule } from './modules/analytic/analytic.module';
     }),
 
     AnalyticModule,
+
+    AddressModule,
   ],
 })
 export class AppModule {}

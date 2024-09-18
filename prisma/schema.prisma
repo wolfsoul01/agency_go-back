@@ -202,8 +202,8 @@ model Municipalities {
   name       String?
   code       String
   provinceId Int?
-  createdAt  DateTime
-  updatedAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
   Addresses  Addresses[]
   Provinces  Provinces?  @relation(fields: [provinceId], references: [id], onDelete: NoAction)
 }
@@ -213,8 +213,8 @@ model Provinces {
   name           String?
   code           String
   countryId      Int?
-  createdAt      DateTime
-  updatedAt      DateTime
+  createdAt      DateTime?
+  updatedAt      DateTime?
   Addresses      Addresses[]
   Municipalities Municipalities[]
 }

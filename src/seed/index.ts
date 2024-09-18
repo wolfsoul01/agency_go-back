@@ -1,7 +1,8 @@
 import { PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { seedAddress } from './seed.address';
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 async function main() {
   const existingAdmin = await prisma.user.findFirst({
@@ -25,6 +26,8 @@ async function main() {
   } else {
     console.log('Admin user already exists');
   }
+
+  seedAddress();
 }
 
 main()
