@@ -61,19 +61,37 @@ model Car {
   Trip        Trip[]
 }
 
-enum RoomType {
-  SINGLE
-  DOUBLE
-  SUITE
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  OUT_OF_SERVICE
 }
 
 model Room {
   id            Int           @id @default(autoincrement())
-  number        String
-  type          RoomType
+  name          String
+  description   String?
+  totalPersons  Int           @default(1)
+  status        RoomStatus    @default(AVAILABLE)
   pricePerNight Float
   available     Boolean       @default(true)
   Reservation   Reservation[]
+  Image         Image?        @relation(fields: [imageId], references: [id])
+  imageId       Int?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  Address       Addresses?    @relation(fields: [addressId], references: [id])
+  addressId     Int?
+}
+
+model Image {
+  id          Int      @id @default(autoincrement())
+  url         String   @unique
+  description String?
+  User        User[]
+  Driver      Driver[]
+  Room        Room[]
 }
 
 enum LicenseType {
@@ -157,7 +175,6 @@ model Trip {
 model Addresses {
   id                  Int      @id @default(autoincrement())
   street_1            String?
-  street_2            String?
   description         String?
   city                String?
   coordinateLatitude  Float?
@@ -177,6 +194,7 @@ model Addresses {
   TripInit Trip[] @relation(name: "address_init")
 
   TripEnd Trip[] @relation(name: "address_end")
+  Room    Room[]
 }
 
 model Municipalities {
@@ -199,12 +217,4 @@ model Provinces {
   updatedAt      DateTime
   Addresses      Addresses[]
   Municipalities Municipalities[]
-}
-
-model Image {
-  id          Int      @id @default(autoincrement())
-  url         String   @unique
-  description String?
-  User        User[]
-  Driver      Driver[]
 }
