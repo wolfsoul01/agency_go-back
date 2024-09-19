@@ -29,4 +29,20 @@ export class CreateRoomDto implements Prisma.RoomCreateInput {
 
   @IsOptional()
   status?: RoomStatus;
+
+  @IsOptional()
+  @IsNumber()
+  municipalityId: number;
+
+  @IsOptional()
+  @IsNumber()
+  provinceId: number;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  street_1: string;
 }

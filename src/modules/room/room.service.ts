@@ -7,15 +7,22 @@ import { PrismaService } from '../prisma/prisma.service';
 export class RoomService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createRoomDto: CreateRoomDto) {
-    // const address = await this.prisma.addresses.create({
-    //   data: {
+    const { municipalityId, city, street_1, provinceId, ...rest } =
+      createRoomDto;
 
-    //   },
-    // });
+    const address = await this.prisma.addresses.create({
+      data: {
+        city,
+        street_1,
+        municipalityId,
+        provinceId,
+      },
+    });
 
     return await this.prisma.room.create({
       data: {
-        ...createRoomDto,
+        ...rest,
+        addressId: address.id,
       },
     });
   }
@@ -24,6 +31,15 @@ export class RoomService {
     return this.prisma.room.findMany({
       include: {
         Image: true,
+        Address: {
+          include: {
+            Municipalities: true,
+            Provinces: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
   }
@@ -35,6 +51,7 @@ export class RoomService {
       },
       include: {
         Image: true,
+        Address: true,
       },
     });
   }

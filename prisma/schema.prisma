@@ -182,7 +182,6 @@ model Addresses {
   postalCode          String?
   municipalityId      Int?
   provinceId          Int?
-  countryId           Int?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -212,7 +211,6 @@ model Provinces {
   id             Int              @id @default(autoincrement())
   name           String?
   code           String
-  countryId      Int?
   createdAt      DateTime?
   updatedAt      DateTime?
   Addresses      Addresses[]
