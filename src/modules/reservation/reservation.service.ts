@@ -1,7 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReservationStatus, TypeReservation } from '@prisma/client';
 import { CreateReservationDto } from './dto/create-reservation.dto';
+import { differenceInDays, isBefore } from 'date-fns';
 
 @Injectable()
 export class ReservationsService {
@@ -11,13 +17,20 @@ export class ReservationsService {
     return await this.prisma.reservation.findMany({
       where: {
         startDate: {
-          gte: startDate ?? new Date(),
-          lte: endDate ?? new Date(),
+          gte: new Date(startDate) ?? new Date(),
+          lte: new Date(endDate) ?? new Date(),
         },
       },
       include: {
-        room: true,
+        room: {
+          include: {
+            Image: true,
+          },
+        },
         user: true,
+        car: {
+          include: {},
+        },
       },
     });
   }
@@ -26,23 +39,71 @@ export class ReservationsService {
   }
 
   async createRoomReservation(dto: CreateReservationDto) {
-    const { roomId } = dto;
+    const { roomId, startDate, endDate } = dto;
 
-    const room = await this.prisma.room.findUnique({ where: { id: roomId } });
+    // if (!isValid(startDate) || !isValid(endDate)) {
+    //   throw new BadRequestException('Invalid date format');
+    // }
 
-    if (!room) {
-      throw new Error('Room not found');
+    try {
+      const [room, user] = await Promise.all([
+        this.prisma.room.findUnique({ where: { id: roomId } }),
+        this.prisma.user.findUnique({
+          where: { id: dto.userId },
+        }),
+      ]);
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (!room) {
+        throw new NotFoundException('Room not found');
+      }
+
+      if (isBefore(dto.startDate, new Date())) {
+        throw new BadRequestException('Start date must be greater than today');
+      }
+
+      if (isBefore(endDate, startDate)) {
+        throw new BadRequestException(
+          'End date must be greater than start date',
+        );
+      }
+
+      const totalDays = differenceInDays(startDate, endDate);
+
+      const exitsReservation = await this.prisma.reservation.findFirst({
+        where: {
+          roomId: roomId,
+          startDate: {
+            gte: dto.startDate,
+            lte: dto.endDate,
+          },
+          endDate: {
+            lte: dto.endDate,
+          },
+        },
+      });
+
+      if (exitsReservation) {
+        throw new ConflictException('Room already reserved');
+      }
+
+      return await this.prisma.reservation.create({
+        data: {
+          ...dto,
+          days: 1,
+          totalCost: room.pricePerNight * totalDays,
+          type: TypeReservation.ROOM,
+          status: ReservationStatus.Pending,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+        },
+      });
+    } catch (error) {
+      throw error;
     }
-
-    return await this.prisma.reservation.create({
-      data: {
-        ...dto,
-        days: 1,
-        totalCost: room.pricePerNight * 1,
-        type: TypeReservation.ROOM,
-        status: ReservationStatus.Pending,
-      },
-    });
   }
 
   async createCarReservation(dto: CreateReservationDto) {

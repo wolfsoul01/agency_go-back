@@ -7,6 +7,7 @@ import {
   Delete,
   BadRequestException,
   Get,
+  Query,
 } from '@nestjs/common';
 import { ReservationsService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -18,9 +19,10 @@ export class ReservationsController {
 
   @Get()
   findAll(
-    @Param('startDate') startDate: Date,
-    @Param('endDate') endDate: Date,
+    @Query('startDate') startDate: Date,
+    @Query('endDate') endDate: Date,
   ): Promise<Reservation[]> {
+    console.log(startDate, endDate);
     return this.reservationsService.findAllReservations(startDate, endDate);
   }
 
