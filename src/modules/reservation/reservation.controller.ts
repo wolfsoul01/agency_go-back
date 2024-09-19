@@ -1,18 +1,44 @@
-import { Controller, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+  BadRequestException,
+  Get,
+} from '@nestjs/common';
 import { ReservationsService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
+import { Reservation } from '@prisma/client';
 
 @Controller('reservations')
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
+  @Get()
+  findAll(
+    @Param('startDate') startDate: Date,
+    @Param('endDate') endDate: Date,
+  ): Promise<Reservation[]> {
+    return this.reservationsService.findAllReservations(startDate, endDate);
+  }
+
+  @Get()
+  findReservations(): Promise<Reservation[]> {
+    return this.reservationsService.findReservations();
+  }
+
   @Post('room')
   createRoomReservation(@Body() dto: CreateReservationDto) {
+    if (!dto.roomId) throw new BadRequestException('Room ID is required');
     return this.reservationsService.createRoomReservation(dto);
   }
 
   @Post('car')
   createCarReservation(@Body() dto: CreateReservationDto) {
+    if (!dto.carId) throw new BadRequestException('Car ID is required');
+
     return this.reservationsService.createCarReservation(dto);
   }
 

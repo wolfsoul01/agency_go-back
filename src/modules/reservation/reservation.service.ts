@@ -7,6 +7,24 @@ import { CreateReservationDto } from './dto/create-reservation.dto';
 export class ReservationsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAllReservations(startDate: Date, endDate: Date) {
+    return await this.prisma.reservation.findMany({
+      where: {
+        startDate: {
+          gte: startDate ?? new Date(),
+          lte: endDate ?? new Date(),
+        },
+      },
+      include: {
+        room: true,
+        user: true,
+      },
+    });
+  }
+  async findReservations(roomId?: number) {
+    return await this.prisma.reservation.findMany({ where: { roomId } });
+  }
+
   async createRoomReservation(dto: CreateReservationDto) {
     const { roomId } = dto;
 
@@ -19,7 +37,8 @@ export class ReservationsService {
     return await this.prisma.reservation.create({
       data: {
         ...dto,
-        totalCost: room.pricePerNight * dto.days,
+        days: 1,
+        totalCost: room.pricePerNight * 1,
         type: TypeReservation.ROOM,
         status: ReservationStatus.Pending,
       },
@@ -38,7 +57,8 @@ export class ReservationsService {
     return await this.prisma.reservation.create({
       data: {
         ...dto,
-        totalCost: card.pricePerNight * dto.days,
+        days: 1,
+        totalCost: card.pricePerNight * 1,
         type: TypeReservation.CAR,
         status: ReservationStatus.Pending,
       },

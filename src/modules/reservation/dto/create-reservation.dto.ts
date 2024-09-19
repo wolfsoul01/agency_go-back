@@ -1,15 +1,9 @@
-import { IsDate, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { IsDate, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateReservationDto {
-  @IsDate()
   startDate: Date;
 
-  @IsDate()
   endDate: Date;
-
-  @IsNumber()
-  @IsPositive()
-  days: number;
 
   @IsOptional()
   @IsNumber()
