@@ -57,6 +57,8 @@ export class RoomService {
   }
 
   async update(id: number, updateRoomDto: UpdateRoomDto) {
+    const { municipalityId, city, street_1, provinceId, ...rest } =
+      updateRoomDto;
     const room = await this.prisma.room.findUnique({
       where: {
         id,
@@ -67,12 +69,24 @@ export class RoomService {
       throw new NotFoundException('Room not found');
     }
 
+    await this.prisma.addresses.update({
+      where: {
+        id: room?.addressId,
+      },
+      data: {
+        city,
+        municipalityId,
+        street_1,
+        provinceId,
+      },
+    });
+
     return this.prisma.room.update({
       where: {
         id,
       },
       data: {
-        ...updateRoomDto,
+        ...rest,
       },
     });
   }

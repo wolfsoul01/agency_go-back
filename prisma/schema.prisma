@@ -127,11 +127,20 @@ enum ReservationStatus {
   Cancelled
 }
 
+enum TypeReservation {
+  CAR
+  ROOM
+  TRAVEL
+}
+
 model Reservation {
   id        Int               @id @default(autoincrement())
   startDate DateTime
   endDate   DateTime
-  status    ReservationStatus // Pending, Confirmed, Cancelled, etc.
+  days      Int?
+  totalCost Float
+  type      TypeReservation
+  status    ReservationStatus
   user      User              @relation(fields: [userId], references: [id])
   userId    Int
   room      Room              @relation(fields: [roomId], references: [id])
