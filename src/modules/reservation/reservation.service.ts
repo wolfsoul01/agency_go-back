@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ReservationStatus, TypeReservation } from '@prisma/client';
 import { CreateReservationDto } from './dto/create-reservation.dto';
-import { differenceInDays, isBefore } from 'date-fns';
+import { differenceInDays, isBefore, startOfMonth } from 'date-fns';
 
 @Injectable()
 export class ReservationsService {
@@ -141,5 +141,41 @@ export class ReservationsService {
         status: ReservationStatus.Confirmed,
       },
     });
+  }
+
+  async getSummaryReservations(date: Date) {
+    const moth = startOfMonth(date);
+
+    const reservations = await this.prisma.reservation.findMany({
+      where: {
+        startDate: {
+          gte: moth,
+        },
+        status: {
+          in: [ReservationStatus.Confirmed, ReservationStatus.Pending],
+        },
+      },
+    });
+
+    const totalCost = reservations.reduce(
+      (acc, { totalCost }) => acc + totalCost,
+      0,
+    );
+
+    const totalReservationsCar = reservations.filter(
+      (item) => item.type === 'CAR',
+    ).length;
+    const totalReservationsRoom = reservations.filter(
+      (item) => item.type === 'ROOM',
+    ).length;
+
+    console.log(totalCost);
+
+    return {
+      totalReservations: reservations.length,
+      totalCost,
+      totalReservationsCar,
+      totalReservationsRoom,
+    };
   }
 }

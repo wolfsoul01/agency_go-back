@@ -22,11 +22,19 @@ export class ReservationsController {
     @Query('startDate') startDate: Date,
     @Query('endDate') endDate: Date,
   ): Promise<Reservation[]> {
-    console.log(startDate, endDate);
     return this.reservationsService.findAllReservations(startDate, endDate);
   }
 
-  @Get()
+  @Get('/summary')
+  getSummaryReservation(@Query('date') date: Date) {
+    if (!date) {
+      throw new BadRequestException('Date is required');
+    }
+
+    return this.reservationsService.getSummaryReservations(date);
+  }
+
+  @Get(':id')
   findReservations(): Promise<Reservation[]> {
     return this.reservationsService.findReservations();
   }
