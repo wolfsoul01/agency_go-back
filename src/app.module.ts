@@ -10,6 +10,7 @@ import { join } from 'path';
 import { AnalyticModule } from './modules/analytic/analytic.module';
 import { AddressModule } from './modules/address/address.module';
 import { ReservationModule } from './modules/reservation/reservation.module';
+import { ClientModule } from './modules/client/client.module';
 
 @Module({
   imports: [
@@ -29,6 +30,8 @@ import { ReservationModule } from './modules/reservation/reservation.module';
     AddressModule,
 
     ReservationModule,
+
+    ClientModule,
   ],
 })
 export class AppModule {}
