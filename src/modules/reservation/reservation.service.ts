@@ -7,7 +7,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { ReservationStatus, TypeReservation } from '@prisma/client';
 import { CreateReservationDto } from './dto/create-reservation.dto';
-import { differenceInDays, endOfMonth, isBefore, startOfMonth } from 'date-fns';
+import { startOfDay } from 'date-fns';
+import {
+  differenceInDays,
+  endOfMonth,
+  isAfter,
+  isBefore,
+  startOfMonth,
+} from 'date-fns';
 
 @Injectable()
 export class ReservationsService {
@@ -61,7 +68,10 @@ export class ReservationsService {
         throw new NotFoundException('Room not found');
       }
 
-      if (isBefore(dto.startDate, new Date())) {
+      console.log(isAfter(new Date(), dto.startDate));
+      console.log(startOfDay(dto.startDate));
+      console.log(new Date());
+      if (isAfter(new Date(), startOfDay(dto.startDate))) {
         throw new BadRequestException('Start date must be greater than today');
       }
 

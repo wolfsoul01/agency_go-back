@@ -15,12 +15,12 @@ export class ClientService {
               AND: [
                 {
                   startDate: {
-                    lt: new Date(endDate ?? new Date()) ,
+                    lt: new Date(endDate ?? new Date()),
                   },
                 },
                 {
                   endDate: {
-                    gt: new Date(startDate ?? new Date()) ,
+                    gt: new Date(startDate ?? new Date()),
                   },
                 },
               ],
